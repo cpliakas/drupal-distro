@@ -62,8 +62,8 @@ the tools.
 
 #### Continuous Integration
 
-Your new distro is pre-configured to work with [Travis CI](https://travis-ci.org/).
-The easiest way to get started is to create a repository on GitHub, log into
-Travis CI with your GitHub account, and then enable your repository for testing.
-All commits pushed to GitHub will automatically trigger a Travis CI build and
-run your behavior tests.
+Your new distro is pre-configured to work with Travis CI. The easiest way to get
+started is to [create a repository on GitHub](https://help.github.com/articles/create-a-repo),
+log into Travis CI with your GitHub account, and then enable your repository for
+testing. All commits pushed to GitHub will automatically trigger a Travis CI
+build and run your behavior tests.
