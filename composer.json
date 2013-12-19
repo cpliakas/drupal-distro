@@ -1,0 +1,26 @@
+{
+    "name": "cpliakas/drupal-distro",
+    "type": "library",
+    "description": "A command line tool that creates and manages Drupal distributions.",
+    "keywords": ["drupal"],
+    "homepage": "https://github.com/cpliakas/drupal-distro",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "Chris Pliakas",
+            "email": "opensource@chrispliakas.com"
+        }
+    ],
+    "require": {
+        "php": ">=5.3.0",
+        "guzzle/http": "~3.0",
+        "symfony/console": "~2.0",
+        "symfony/filesystem": "~2.0"
+    },
+    "autoload": {
+        "psr-0": {
+            "Drupal\\Distro": "src/"
+        }
+    },
+    "bin": ["bin/drupal-distro.php", "bin/drupal-distro"]
+}

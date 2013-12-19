@@ -1,0 +1,208 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="{{ site.name }}" default="build">
+
+  <property name="drupal.profile" value="{{ profile }}"/>
+
+  <property name="builddir" value="${basedir}/build"/>
+  <property name="selenium" value="${builddir}/selenium-server-standalone.jar"/>
+
+  <property file="build.properties"/>
+
+  <property name="base.url" value="http://localhost"/>
+  <property name="behat.params" value="extensions[Behat\MinkExtension\Extension][base_url]=${base.url}"/>
+  <property name="composer" value="${builddir}/composer.phar"/>
+  <property name="drush.makefile" value="build-${drupal.profile}.make"/>
+  <property name="php" value="php"/>
+  <property name="rsync" value="rsync"/>
+  <property name="selenium.version" value="2.37.0"/>
+  <property name="selenium.port" value="4444"/>
+  <property name="site.name" value="{{ site.name }}"/>
+  <property name="sites.subdir" value="default"/>
+
+  <target name="build" depends="install" description="Run drush make and drush site-install"/>
+  <target name="run-tests" depends="behat" description="Run behavior tests"/>
+
+  <target name="clean" description="Clean build artifacts">
+    <delete dir="${builddir}"/>
+  </target>
+
+  <target name="clean-docroot">
+    <chmod dir="${basedir}/docroot/sites/${sites.subdir}" perm="755"/>
+    <delete dir="${basedir}/docroot"/>
+  </target>
+
+  <target name="clean-vendor">
+    <delete dir="${basedir}/composer.lock"/>
+    <delete dir="${basedir}/vendor"/>
+  </target>
+
+  <target name="clean-src" depends="clean-docroot,clean-vendor" description="Clean source code"/>
+
+  <target name="clean-all" depends="clean,clean-src" description="Clean build artifacts and source code"/>
+
+  <target name="prepare">
+    <mkdir dir="${builddir}" />
+    <mkdir dir="${builddir}/logs" />
+  </target>
+
+  <target name="composer-check">
+    <available file="${composer}" property="composer.present"/>
+  </target>
+
+  <target name="composer-download" depends="prepare,composer-check" unless="composer.present">
+    <property name="composer.noselfupdate" value="true"/>
+    <get src="https://getcomposer.org/composer.phar" dest="${composer}"/>
+  </target>
+
+  <target name="composer-selfupdate" depends="composer-download" unless="composer.noselfupdate">
+    <exec executable="${php}" taskname="composer">
+      <arg value="${composer}"/>
+      <arg value="self-update"/>
+      <arg value="--quiet"/>
+    </exec>
+  </target>
+
+  <target name="composer" depends="composer-selfupdate" unless="composer.noupdate" description="Run composer update">
+    <exec executable="${php}" taskname="composer">
+      <arg value="${composer}"/>
+      <arg value="update"/>
+    </exec>
+  </target>
+
+  <target name="drush-check">
+    <condition property="drush.present">
+      <or>
+        <available file="${builddir}/vendor/bin/drush"/>
+        <isset property="${drush}"/>
+      </or>
+    </condition>
+    <condition property="drush" value="${builddir}/vendor/bin/drush">
+      <not>
+        <isset property="${drush}"/>
+      </not>
+    </condition>
+  </target>
+
+  <target name="drush-download" depends="prepare,composer-selfupdate,drush-check" unless="drush.present">
+    <exec executable="${php}" taskname="composer">
+      <arg value="${composer}"/>
+      <arg value="--working-dir=${builddir}"/>
+      <arg value="require"/>
+      <arg value="drush/drush:~6.0"/>
+    </exec>
+  </target>
+
+  <target name="drush-make" depends="drush-download" unless="drush.nomake" description="Run drush make">
+    <delete dir="${builddir}/docroot"/>
+    <!-- Run drush make into ./build/drupal -->
+    <exec executable="${drush}" taskname="drush">
+      <env key="DRUSH_PHP" value="${php}"/>
+      <arg value="make"/>
+      <arg value="--nocolor"/>
+      <arg value="${basedir}/${drush.makefile}"/>
+      <arg value="${builddir}/docroot"/>
+    </exec>
+    <!-- Rsync the build into ./docroot -->
+    <exec executable="${rsync}" taskname="rsync">
+      <arg value="-aqc"/>
+      <arg value="--delete"/>
+      <arg value="--exclude=sites/*/settings*.php"/>
+      <arg value="--exclude=sites/*/files"/>
+      <arg value="${builddir}/docroot/"/>
+      <arg value="${basedir}/docroot"/>
+    </exec>
+  </target>
+
+  <target name="install" depends="drush-make" unless="drush.noinstall" description="Run drush site-install">
+    <exec executable="${drush}" dir="${basedir}/docroot" taskname="drush">
+      <env key="DRUSH_PHP" value="${php}"/>
+      <arg value="site-install"/>
+      <arg value="-y"/>
+      <arg value="--nocolor"/>
+      <arg value="--db-url=${db.url}"/>
+      <arg value="--site-name=${site.name}"/>
+      <arg value="--site-mail=${site.mail}"/>
+      <arg value="--account-name=${account.name}"/>
+      <arg value="--account-pass=${account.pass}"/>
+      <arg value="--account-mail=${account.mail}"/>
+      <arg value="--sites-subdir=${sites.subdir}"/>
+      <arg value="${drupal.profile}"/>
+    </exec>
+  </target>
+
+  <target name="uninstall" depends="drush-check" description="Run drush sql-drop">
+    <exec executable="${drush}" dir="${basedir}/docroot" taskname="drush">
+      <env key="DRUSH_PHP" value="${php}"/>
+      <arg value="sql-drop"/>
+      <arg value="-y"/>
+      <arg value="--nocolor"/>
+      <arg value="--db-url=${db.url}"/>
+    </exec>
+  </target>
+
+  <target name="behat-check">
+    <condition property="behat.present">
+      <or>
+        <available file="${builddir}/vendor/bin/behat"/>
+        <isset property="${behat}"/>
+      </or>
+    </condition>
+    <condition property="behat" value="${builddir}/vendor/bin/behat">
+      <not>
+        <isset property="${behat}"/>
+      </not>
+    </condition>
+  </target>
+
+  <target name="behat-download" depends="prepare,composer-selfupdate,behat-check" unless="behat.present">
+    <copy file="${basedir}/test/composer.json" tofile="${builddir}/composer.json" overwrite="true"/>
+    <exec executable="${php}" taskname="composer">
+      <arg value="${composer}"/>
+      <arg value="--working-dir=${builddir}"/>
+      <!--
+      <arg value="require"/>
+      <arg value="drupal/drupal-extension:*"/>
+      -->
+      <arg value="update"/>
+    </exec>
+  </target>
+
+  <target name="behat" depends="build,behat-download">
+    <antcall target="selenium-start" />
+    <exec executable="${behat}" taskname="behat">
+      <env key="BEHAT_PARAMS" value="${behat.params}"/>
+    </exec>
+    <antcall target="selenium-stop" />
+  </target>
+
+  <target name="selenium-check" depends="prepare">
+    <available file="${selenium}" property="selenium.present"/>
+  </target>
+
+  <target name="selenium-download" depends="selenium-check" unless="selenium.present">
+    <get src="http://selenium.googlecode.com/files/selenium-server-standalone-${selenium.version}.jar" dest="${selenium}"/>
+  </target>
+
+  <target name="selenium-start" depends="selenium-download">
+    <echo taskname="selenium" message="Starting: Selenium server" />
+    <java jar="${selenium}" fork="true" spawn="true">
+      <arg line="-port ${selenium.port}"/>
+      <arg line="-log ${builddir}/logs/selenium.log"/>
+    </java>
+    <waitfor maxwait="30" maxwaitunit="second">
+      <and>
+        <socket server="localhost" port="${selenium.port}"/>
+        <http url="http://localhost:${selenium.port}/selenium-server/core/index.html" errorsBeginAt="404"/>
+      </and>
+    </waitfor>
+  </target>
+
+  <target name="selenium-stop">
+    <get taskname="selenium"
+         src="http://localhost:${selenium.port}/selenium-server/driver/?cmd=shutDownSeleniumServer"
+         dest="${builddir}/logs/shutdown.log"
+         ignoreerrors="true"
+         />
+  </target>
+
+</project>

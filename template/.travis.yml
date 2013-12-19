@@ -1,0 +1,28 @@
+language: php
+
+php:
+  - 5.5
+  - 5.4
+  - 5.3
+
+before_install:
+  - "sudo apt-get update"
+  - "export DISPLAY=:99.0"
+  - "sh -e /etc/init.d/xvfb start"
+  - sleep 3
+
+before_script:
+  # Apache webserver configuration
+  - sudo apt-get install -y --force-yes apache2 libapache2-mod-php5 php5-mysql php5-curl
+  - sudo sed -i -e "s,/var/www,$(pwd)/docroot,g" /etc/apache2/sites-available/default
+  - sudo a2enmod rewrite
+  - sudo a2enmod actions
+  - sudo service apache2 restart
+  # MySQL database configuration
+  - mysql -e 'CREATE DATABASE {{ profile }};'
+  # Ant build tool configuration
+  - cp build.properties.dist build.properties
+  - sed -i -e "s,username:password@host/db,travis@127.0.0.1/{{ profile }},g" build.properties
+
+script:
+  - ant run-tests

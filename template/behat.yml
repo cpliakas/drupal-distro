@@ -1,0 +1,11 @@
+default:
+  paths:
+    features: test/features
+  extensions:
+    Behat\MinkExtension\Extension:
+      goutte: ~
+      selenium2: ~
+      default_session: goutte
+      javascript_session: selenium2
+    Drupal\DrupalExtension\Extension:
+      blackbox: ~

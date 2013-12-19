@@ -1,0 +1,34 @@
+{
+    "chmod": "0755",
+    "directories": ["src", "template/7.x", "template/test"],
+    "files": [
+        "bin/drupal-distro.php",
+        "LICENSE",
+        "template/.editorconfig",
+        "template/.gitignore",
+        "template/.travis.yml",
+        "template/behat.yml",
+        "template/build-example.make",
+        "template/build.properties.dist",
+        "template/build.xml",
+        "template/drupal-org-core.make",
+        "template/drupal-org.make",
+    ],
+    "finder": [
+        {
+            "name": "*.php",
+            "exclude": [
+                "phing",
+                "test",
+                "tests",
+                "Test",
+                "Tests",
+                "Tester"
+            ],
+            "in": "vendor"
+        }
+    ],
+    "main": "bin/drupal-distro",
+    "output": "build/drupal-distro.phar",
+    "stub": true
+}
