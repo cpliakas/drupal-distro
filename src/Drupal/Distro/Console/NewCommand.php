@@ -75,7 +75,7 @@ class NewCommand extends Command
                'The longer description of the profile'
             )
             ->addOption(
-               'git-repo',
+               'git-url',
                 null,
                InputOption::VALUE_REQUIRED,
                'The URL of the Git repository hosting the distro'
@@ -96,7 +96,7 @@ class NewCommand extends Command
         $siteName    = $input->getOption('site-name') ?: $profile;
         $profileName = $input->getOption('profile-name') ?: $profile;
         $profileDesc = $input->getOption('profile-description') ?: $profile;
-        $gitRepo     = $input->getOption('git-repo') ?: 'http://git.drupal.org/project/' . $profile . '.git';
+        $gitUrl      = $input->getOption('git-url') ?: 'http://git.drupal.org/project/' . $profile . '.git';
         $coreVersion = $input->getOption('core-version') ?: '7';
         $coreBranch  = $coreVersion . '.x';
 
@@ -105,11 +105,12 @@ class NewCommand extends Command
         }
 
         $replacements = array(
-          '{{ site.name }}'           => $siteName,
+          '{{ drupal.version }}'      => $this->getDrupalVersion($coreBranch),
+          '{{ git.url }}'             => $gitUrl,
           '{{ profile }}'             => $profile,
           '{{ profile.name }}'        => $profileName,
           '{{ profile.description }}' => $profileDesc,
-          '{{ drupal.version }}'      => $this->getDrupalVersion($coreBranch),
+          '{{ site.name }}'           => $siteName,
         );
 
         $filenames = array(
@@ -120,7 +121,6 @@ class NewCommand extends Command
             'build.properties.dist',
             'behat.yml',
             'build-example.make',
-            'test/composer.json',
             'test/features/bootstrap/FeatureContext.php',
             'test/features/test.feature',
             'drupal-org-core.make',
