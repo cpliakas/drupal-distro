@@ -54,6 +54,7 @@ Clone the repository and change into the resulting directory.
 
 * Copy the `build.properties.dist` file to `build.properties`
 * Modify `build.properties` according to your local environment
+
 ```ini
 base.url=http://localhost
 db.url=mysql://username:password@host/db
@@ -64,6 +65,7 @@ db.url=mysql://username:password@host/db
 #account.pass=admin
 #account.mail=test@example.com
 ```
+
 * Run `ant` on the command line
 
 #### Write The Behavior Tests
