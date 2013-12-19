@@ -29,7 +29,7 @@ php drupal-distro.phar new \
   --profile-name="My Distro" \
   --profile-description="A test installation profile" \
   --git-url=http://example.com/repo.git \
-  distro-test
+  distro_test
 ```
 
 _TIP_: To test locally, create a repo on your filesystem by running
