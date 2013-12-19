@@ -48,7 +48,8 @@ git push -u origin master
 
 ## Usage For Distro Developers
 
-Clone the repository and change into the resulting directory.
+Clone the repository and change into the resulting directory. It is assumed that your web and
+database servers are configured to serve your Drupal application.
 
 #### Install The Distro
 
