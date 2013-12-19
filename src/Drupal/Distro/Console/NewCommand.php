@@ -93,9 +93,9 @@ class NewCommand extends Command
     {
         $profile     = $input->getArgument('profile');
         $dir         = $input->getArgument('directory') ?: './' . $profile;
-        $siteName    = $input->getOption('site-name') ?: $profile;
         $profileName = $input->getOption('profile-name') ?: $profile;
         $profileDesc = $input->getOption('profile-description') ?: $profile;
+        $siteName    = $input->getOption('site-name') ?: $profileName;
         $gitUrl      = $input->getOption('git-url') ?: 'http://git.drupal.org/project/' . $profile . '.git';
         $coreVersion = $input->getOption('core-version') ?: '7';
         $coreBranch  = $coreVersion . '.x';
@@ -154,7 +154,7 @@ class NewCommand extends Command
         );
 
         $pattern = '@' . preg_quote($coreBranch, '@') . '/example(\\.[a-z]+)$@';
-        $replacement = $profileName . '\\1';
+        $replacement = $profile . '\\1';
         foreach ($profileFiles as $profileOrigin) {
             $profileTarget = preg_replace($pattern, $replacement, $profileOrigin);
             $this->fs->rename($profileOrigin, $profileTarget);
