@@ -13,6 +13,8 @@
         "template/build.xml",
         "template/drupal-org-core.make",
         "template/drupal-org.make",
+        "vendor/guzzle/http/Guzzle/Http/Resources/cacert.pem",
+        "vendor/guzzle/http/Guzzle/Http/Resources/cacert.pem.md5"
     ],
     "finder": [
         {
