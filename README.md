@@ -20,7 +20,7 @@ that makes it easier to access, for example `/usr/local/bin`, and renaming it
 to `drupal-distro`. Ensure the file is executable by running `chmod 755` so that
 you don't have to prefix the command with `php`.
 
-## Usage
+## Usage For Distro Maintainers
 
 #### Create A New Distro
 
@@ -36,17 +36,37 @@ _TIP_: To test locally, create a repo on your filesystem by running
 `git init --bare /path/to/repo/dir` and then using `file:///path/to/repo/dir`
 as the `--git-url` option.
 
-#### Install The New Distro
+#### Commit Distro To Git Repository
 
-After setting up your web server and creating a database, commit the newly
-created distro to your Git repository and use Apache Ant to quickly install
-the application:
+```
+cd distro_test
+git init
+git add -A
+git remote add origin http://example.com/repo.git
+git push -u origin master
+```
+
+## Usage For Distro Developers
+
+Clone the repository and change into the resulting directory.
+
+#### Install The Distro
 
 * Copy the `build.properties.dist` file to `build.properties`
 * Modify `build.properties` according to your local environment
+```ini
+base.url=http://localhost
+db.url=mysql://username:password@host/db
+
+#sites.subdir=default
+#site.mail=test@example.com
+#account.name=admin
+#account.pass=admin
+#account.mail=test@example.com
+```
 * Run `ant` on the command line
 
-#### Write Behavior Tests
+#### Write The Behavior Tests
 
 Behavior tests are contained in the `test` directory. Refer to the
 [Behat](http://behat.org/) project for more details on writing tests. The Apache
@@ -54,7 +74,7 @@ Ant targets included with your new distribution will automatically install the
 test suite (Behat + Mink + Selenium), and your distro is pre-configured to use
 the tools.
 
-#### Run Behavior Tests
+#### Run The Behavior Tests
 
 * Run `ant run-tests` to re-install the distro and run the behavior tests
   * Pass the `-Ddrush.nomake=1` option to prevent rebuilding the docroot
