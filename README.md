@@ -42,6 +42,7 @@ as the `--git-url` option.
 cd distro_test
 git init
 git add -A
+git commit -m "first commit"
 git remote add origin http://example.com/repo.git
 git push -u origin master
 ```
