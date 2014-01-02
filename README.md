@@ -91,3 +91,27 @@ started is to [create a repository on GitHub](https://help.github.com/articles/c
 log into Travis CI with your GitHub account, and then enable your repository for
 testing. All commits pushed to GitHub will automatically trigger a Travis CI
 build and run your behavior tests.
+
+## Related Projects
+
+Drupal Distribution Manager builds on the shoulders of giants, and the list of
+projects below are used by this application:
+
+* [Drupal](https://drupal.org)
+* [Drush](https://github.com/drush-ops/drush)
+* [Behat](http://behat.org/)
+* [Drupal Behat Extension](https://github.com/jhedstrom/drupalextension)
+* [Mink](http://mink.behat.org/)
+* [Selenium Server](http://docs.seleniumhq.org/)
+* [Travis CI](https://travis-ci.org/)
+* [Composer](http://getcomposer.org/)
+* [Apache Ant](http://ant.apache.org/)
+
+P.S. Do you really want to download and configure all this stuff yourself? Let
+Drupal Distribution Manager do the dirty work for you!
+
+### Attribution
+
+Many of the concepts used in Drupal Distribution Manager were adopted from
+[rb2k](https://github.com/rb2k)'s work on the
+[Commons](https://drupal.org/project/commons) distribution.
