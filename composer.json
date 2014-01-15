@@ -13,6 +13,7 @@
     ],
     "require": {
         "php": ">=5.3.0",
+        "ext-curl": "*",
         "guzzle/http": "~3.0",
         "symfony/console": "~2.0",
         "symfony/filesystem": "~2.0"
