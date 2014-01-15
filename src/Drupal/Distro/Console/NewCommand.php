@@ -2,6 +2,7 @@
 
 namespace Drupal\Distro\Console;
 
+use GitWrapper\GitWrapper;
 use Guzzle\Http\Client;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
@@ -80,6 +81,18 @@ class NewCommand extends Command
                InputOption::VALUE_REQUIRED,
                'The URL of the Git repository hosting the distro'
             )
+            ->addOption(
+               'git-binary',
+                null,
+               InputOption::VALUE_REQUIRED,
+               'The path to the Git binary'
+            )
+            ->addOption(
+               'no-repo',
+                null,
+               InputOption::VALUE_NONE,
+               'Don\'t create the Git repository'
+            )
         ;
     }
 
@@ -91,6 +104,7 @@ class NewCommand extends Command
      */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
+        $wrapper     = new GitWrapper($input->getOption('git-binary'));
         $profile     = $input->getArgument('profile');
         $dir         = $input->getArgument('directory') ?: './' . $profile;
         $profileName = $input->getOption('profile-name') ?: $profile;
@@ -165,6 +179,13 @@ class NewCommand extends Command
         }
 
         $this->fs->remove($dir . '/' . $coreBranch);
+
+        if (!$input->getOption('no-repo')) {
+            $git = $wrapper->init($dir);
+            $git->add('*', array('A' => true));
+            $git->commit('first commit');
+            $git->remote('add', 'origin', $gitUrl);
+        }
     }
 
     /**

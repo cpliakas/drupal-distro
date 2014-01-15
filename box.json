@@ -13,6 +13,7 @@
         "template/build.xml",
         "template/drupal-org-core.make",
         "template/drupal-org.make",
+        "vendor/cpliakas/git-wrapper/bin/git-ssh-wrapper.sh",
         "vendor/guzzle/http/Guzzle/Http/Resources/cacert.pem",
         "vendor/guzzle/http/Guzzle/Http/Resources/cacert.pem.md5"
     ],

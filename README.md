@@ -36,14 +36,10 @@ _TIP_: To test locally, create a repo on your filesystem by running
 `git init --bare /path/to/repo/dir` and then using `file:///path/to/repo/dir`
 as the `--git-url` option.
 
-#### Commit Distro To Git Repository
+#### Push Distro To Git Repository
 
 ```
 cd distro_test
-git init
-git add -A
-git commit -m "first commit"
-git remote add origin http://example.com/repo.git
 git push -u origin master
 ```
 
