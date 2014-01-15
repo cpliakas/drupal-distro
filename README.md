@@ -9,7 +9,7 @@ tear down, and run tests against your application.
 ## Installation
 
 ```
-curl -sLO https://github.com/cpliakas/drupal-distro/releases/download/0.1.1/drupal-distro.phar
+curl -sLO https://github.com/cpliakas/drupal-distro/releases/download/0.2.0/drupal-distro.phar
 ```
 
 Run `php drupal-distro.phar list` to see all commands supported by this tool and
