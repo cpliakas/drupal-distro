@@ -104,6 +104,10 @@ class NewCommand extends Command
             throw new \RuntimeException('Core version not valid: ' . $coreVersion);
         }
 
+        if (preg_match('/[^a-zA-Z0-9_]/', $profile)) {
+            throw new \RuntimeException('Profile name must only contain letters, numbers, and underscores');
+        }
+
         $replacements = array(
           '{{ drupal.version }}'      => $this->getDrupalVersion($coreBranch),
           '{{ git.url }}'             => $gitUrl,
