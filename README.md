@@ -77,8 +77,8 @@ the tools.
 #### Run The Behavior Tests
 
 * Run `ant run-tests` to re-install the distro and run the behavior tests
-  * Pass the `-Ddrush.nomake` option to prevent rebuilding the docroot
-  * Pass the `-Ddrush.noinstall` option to prevent reinstalling the distro
+  * Pass the `-Ddrush.nomake=1` option to prevent rebuilding the docroot
+  * Pass the `-Ddrush.noinstall=1` option to prevent reinstalling the distro
 
 #### Continuous Integration
 
