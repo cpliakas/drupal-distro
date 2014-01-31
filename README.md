@@ -43,6 +43,14 @@ cd distro_test
 git push -u origin master
 ```
 
+#### Continuous Integration
+
+Your new distro is pre-configured to work with Travis CI. The easiest way to get
+started is to [create a repository on GitHub](https://help.github.com/articles/create-a-repo),
+log into Travis CI with your GitHub account, and then enable your repository for
+testing. All commits pushed to GitHub will automatically trigger a Travis CI
+build and run your behavior tests.
+
 ## Usage For Distro Developers
 
 Clone the repository and change into the resulting directory. It is assumed that your web and
@@ -85,7 +93,7 @@ drush.makefile=example-dev.make
 
 * Run `ant` on the command line
 
-#### Write The Behavior Tests
+#### Write Behavior Tests
 
 Behavior tests are contained in the `test` directory. Refer to the
 [Behat](http://behat.org/) project for more details on writing tests. The Apache
@@ -93,19 +101,11 @@ Ant targets included with your new distribution will automatically install the
 test suite (Behat + Mink + Selenium), and your distro is pre-configured to use
 the tools.
 
-#### Run The Behavior Tests
+#### Run The Tests
 
 * Run `ant run-tests` to re-install the distro and run the behavior tests
   * Pass the `-Ddrush.nomake=1` option to prevent rebuilding the docroot
   * Pass the `-Ddrush.noinstall=1` option to prevent reinstalling the distro
-
-#### Continuous Integration
-
-Your new distro is pre-configured to work with Travis CI. The easiest way to get
-started is to [create a repository on GitHub](https://help.github.com/articles/create-a-repo),
-log into Travis CI with your GitHub account, and then enable your repository for
-testing. All commits pushed to GitHub will automatically trigger a Travis CI
-build and run your behavior tests.
 
 ## Related Projects
 
