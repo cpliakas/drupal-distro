@@ -66,6 +66,25 @@ db.url=mysql://username:password@host/db
 
 * Run `ant` on the command line
 
+#### Work With A Forked Repo
+
+It is common practice to develop against a fork of the primary repo or an alternate branch.
+The recommended workflow is to create a secondary makefile that references the repository or
+branch being developed against and modify the `build.properties` file to use the newly
+created makefile.
+
+For example, the steps below assume a primary makefile named `example.make`.
+
+* Copy `example.make` to `example-dev.make`
+* Modify `example-dev.make` to reflect your forked repo or development branch
+* Add the following directive to `build.properties`
+
+```ini
+drush.makefile=example-dev.make
+```
+
+* Run `ant` on the command line
+
 #### Write The Behavior Tests
 
 Behavior tests are contained in the `test` directory. Refer to the
