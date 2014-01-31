@@ -68,7 +68,7 @@ db.url=mysql://username:password@host/db
 
 #### Work With A Forked Repo
 
-It is common practice to develop against a fork of the primary repo or an alternate branch.
+It is common practice to develop against a fork of the primary repo or a development branch.
 The recommended workflow is to create a secondary makefile that references the repository or
 branch being developed against and modify the `build.properties` file to use the newly
 created makefile.
