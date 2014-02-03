@@ -16,9 +16,14 @@ class NewCommand extends Command
     const UPDATES_URL = 'http://updates.drupal.org/release-history/drupal';
 
     /**
+     * @var \Guzzle\Http\Client
+     */
+    private $httpClient;
+
+    /**
      * @var \Symfony\Component\Filesystem\Filesystem
      */
-    protected $fs;
+    private $fs;
 
     /**
      * @var string
@@ -26,14 +31,56 @@ class NewCommand extends Command
     protected $templateDir;
 
     /**
-     * @param \Symfony\Component\Filesystem\Filesystem $fs
-     * @param string|null $name
+     * {@inheritdoc}
      */
-    public function __construct(Filesystem $fs, $name = null)
+    public function __construct($name = null)
     {
-        $this->templateDir = __DIR__ . '/../../../../template/';
         parent::__construct($name);
+        $this->templateDir = __DIR__ . '/../../../../template';
+    }
+
+    /**
+     * @param \Guzzle\Http\Client $client
+     *
+     * @return \Drupal\Distro\Console\NewCommand
+     */
+    public function setHttpClient(Client $httpClient)
+    {
+        $this->httpClient = $httpClient;
+        return $this;
+    }
+
+    /**
+     * @return \Guzzle\Http\Client
+     */
+    public function getHttpClient()
+    {
+        if (!isset($this->httpClient)) {
+            $this->httpClient = new Client();
+        }
+        return $this->httpClient;
+    }
+
+    /**
+     * @param \Symfony\Component\Filesystem\Filesystem $fs
+     *
+     * @return \Drupal\Distro\Console\NewCommand
+     */
+    public function setFilesystem(Filesystem $fs)
+    {
         $this->fs = $fs;
+        return $this;
+    }
+
+    /**
+     * @return \Symfony\Component\Filesystem\Filesystem
+     */
+    public function getFilesystem()
+    {
+        if (!isset($this->fs)) {
+            $this->fs = new Filesystem();
+        }
+        return $this->fs;
     }
 
     protected function configure()
@@ -123,12 +170,12 @@ class NewCommand extends Command
         }
 
         $replacements = array(
-          '{{ drupal.version }}'      => $this->getDrupalVersion($coreBranch),
-          '{{ git.url }}'             => $gitUrl,
-          '{{ profile }}'             => $profile,
-          '{{ profile.name }}'        => $profileName,
-          '{{ profile.description }}' => $profileDesc,
-          '{{ site.name }}'           => $siteName,
+            '{{ drupal.version }}'      => $this->getLatestDrupalVersion($coreBranch),
+            '{{ git.url }}'             => $gitUrl,
+            '{{ profile }}'             => $profile,
+            '{{ profile.name }}'        => $profileName,
+            '{{ profile.description }}' => $profileDesc,
+            '{{ site.name }}'           => $siteName,
         );
 
         $filenames = array(
@@ -158,11 +205,13 @@ class NewCommand extends Command
         $this->mkdir($dir . '/test/features/bootstrap');
 
         foreach ($filenames as $filename) {
-            $this->copy($filename, $dir, $replacements);
+            $this->copyFile($filename, $dir, $replacements);
         }
 
+        $fs = $this->getFilesystem();
+
         // Rename the build-example.make file.
-        $this->fs->rename($dir . '/build-example.make', $dir . '/build-' . $profile . '.make');
+        $fs->rename($dir . '/build-example.make', $dir . '/build-' . $profile . '.make');
 
         // Move the profile files and remove the stub dir.
         $flags = \FilesystemIterator::SKIP_DOTS;
@@ -175,10 +224,10 @@ class NewCommand extends Command
         $replacement = $profile . '\\1';
         foreach ($profileFiles as $profileOrigin) {
             $profileTarget = preg_replace($pattern, $replacement, $profileOrigin);
-            $this->fs->rename($profileOrigin, $profileTarget);
+            $fs->rename($profileOrigin, $profileTarget);
         }
 
-        $this->fs->remove($dir . '/' . $coreBranch);
+        $fs->remove($dir . '/' . $coreBranch);
 
         if (!$input->getOption('no-repo')) {
             $git = $wrapper->init($dir);
@@ -193,7 +242,7 @@ class NewCommand extends Command
      */
     public function mkdir($dir)
     {
-        return $this->fs->mkdir($dir, 0755);
+        return $this->getFilesystem()->mkdir($dir, 0755);
     }
 
     /**
@@ -207,28 +256,15 @@ class NewCommand extends Command
      * @throws \RuntimeException
      * @throws \Symfony\Component\Filesystem\Exception\IOException
      */
-    public function copy($filename, $dir, array $replacements = array(), $newname = null)
+    public function copyFile($filename, $dir, array $replacements = array(), $newname = null)
     {
-        $filepath = __DIR__ . '/../../../../template/' . $filename;
+        $filepath = $this->templateDir . '/' . $filename;
         if (!is_file($filepath)) {
             throw new \RuntimeException('File not found: ' . $filename);
         }
 
-        $filedata = $this->replace($replacements, file_get_contents($filepath));
-        $this->write($dir . '/' . $filename, $filedata);
-    }
-
-    /**
-     * Writes data to a file.
-     *
-     * @param string $filepath
-     * @param string $filedata
-     */
-    public function write($filepath, $filedata)
-    {
-        $this->fs->touch($filepath);
-        $this->fs->chmod($filepath, 0644);
-        file_put_contents($filepath, $filedata);
+        $filedata = $this->replaceVariables($replacements, file_get_contents($filepath));
+        $this->getFilesystem()->dumpFile($dir . '/' . $filename, $filedata, 0644);
     }
 
     /**
@@ -239,7 +275,7 @@ class NewCommand extends Command
      *
      * @return string
      */
-    public function replace(array $replacements, $subject)
+    public function replaceVariables(array $replacements, $subject)
     {
         $search  = array_keys($replacements);
         $replace = array_values($replacements);
@@ -252,12 +288,24 @@ class NewCommand extends Command
      * @param string $coreBranch e.g. 7.x, 8.x, etc.
      *
      * @return string
+     *
+     * @throws \UnexpectedValueException
      */
-    public function getDrupalVersion($coreBranch)
+    public function getLatestDrupalVersion($coreBranch)
     {
-        $client = new Client();
-        $xml = $client->get(self::UPDATES_URL . '/' . $coreBranch)->send()->xml();
-        $release = $xml->xpath('/project/releases/release[1]/version');
+        // Parse the latest Drupal version from drupal.org's XML feed.
+        $release = $this
+            ->getHttpClient()
+            ->get(self::UPDATES_URL . '/' . $coreBranch)
+            ->send()
+            ->xml()
+            ->xpath('/project/releases/release[1]/version')
+        ;
+
+        if (!isset($release[0])) {
+            throw new \UnexpectedValueException('Invalid response: Latest Drupal release not found.');
+        }
+
         return (string) $release[0];
     }
 }
